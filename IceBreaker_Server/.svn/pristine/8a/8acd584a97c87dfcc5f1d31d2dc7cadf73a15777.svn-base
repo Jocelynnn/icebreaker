@@ -1,0 +1,40 @@
+package team.mosaic.icebreaker.net;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+
+public class MyServerSocket {
+
+	private ServerSocket ss;
+	private Socket s;
+	private ArrayList<Socket> sockets;
+	private int count;
+	
+	public MyServerSocket(){
+		try {
+			ss = new ServerSocket(8888);
+			sockets = new ArrayList<>();
+			while(true){
+				s = ss.accept();
+				count ++;
+				System.out.println("ÒÑÁ¬½Ó"+s.getPort()+" "+count);
+				new ServerThread(ss, s).start();
+				sockets.add(s);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public int getCount(){
+		return count;
+	}
+	
+	public static void main(String[] args){
+		new MyServerSocket();
+	}
+}

@@ -1,0 +1,27 @@
+package team.mosaic.icebreaker.vo;
+
+import java.io.Serializable;
+
+public class ToolVO implements Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5314183648771894371L;
+	private String tool_id;//道具id
+	private int num;//道具数量
+	
+	public ToolVO(String tool_id,int num){
+		this.tool_id = tool_id;
+		this.num = num;
+	}
+	
+	public String getToolID(){
+		return tool_id;
+	}
+
+	public int getNum(){
+		return num;
+	}
+	
+}

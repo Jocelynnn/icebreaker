@@ -1,0 +1,82 @@
+package team.mosaic.icebreaker.net;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+
+public class MyServerSocket {
+
+	private ServerSocket ss;
+	private Socket s;
+	private ArrayList<ServerThread> sockets;
+	private int count;
+	private ServerPanel ui;
+	private MyServerSocket self;
+
+	public MyServerSocket(ServerPanel ui) {
+		this.ui = ui;
+		self = this;
+		try {
+			ss = new ServerSocket(8888);
+			sockets = new ArrayList<>();
+			listenClient();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void listenClient() {
+		Thread t = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				while (true) {
+					try {
+						s = ss.accept();
+						System.out.println("ÒÑÁ¬½Ó" + s.getPort() + " " + count);
+						ServerThread st = new ServerThread(self, s);
+						st.start();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		t.start();
+	}
+
+	public void shut(){
+		try {
+			ss.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private void increCount(){
+		count ++;
+		ui.updateCount(count);
+	}
+	
+	private void decreCount(){
+		count --;
+		ui.updateCount(count);
+	}
+	
+	public void addMember(ServerThread st){
+		increCount();
+		sockets.add(st);
+	}
+	
+	public void removeMember(ServerThread st){
+		if(st.getID()!=null)
+			decreCount();
+		sockets.remove(st);
+	}
+	
+}

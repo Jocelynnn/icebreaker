@@ -1,0 +1,60 @@
+package team.mosaic.icebreaker.playerstructure;
+
+import java.io.IOException;
+
+import team.mosaic.icebreaker.vo.MessageVO;
+
+
+public class CooperationPair {
+
+	private int step;//用户同步用户操作；
+	
+	private Player p1;
+	private Player p2;
+	
+	/**
+	 * 构造函数，建立协作关系（由第二玩家执行）
+	 * @param p1 玩家1
+	 * @param p2 玩家2
+	 */
+	public CooperationPair(Player p1,Player p2){
+		step = 1;
+		this.p1 = p1;
+		this.p2 = p2;
+		link();
+	}
+	
+	/**
+	 * 与第一玩家建立联系
+	 */
+	private void link(){
+		p1.setCooperationPair(this);
+		try {
+			p1.sendMessage(new MessageVO("startcoop", p2.getID()));
+			p2.sendMessage(new MessageVO("startcoop", p1.getID()));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * 断开协作连接
+	 */
+	public void dismiss(){
+		p1.setCooperationPair(null);
+		p2.setCooperationPair(null);
+	}
+	/**
+	 * 结算结果
+	 */
+	public void end(){
+		
+	}
+	/**
+	 * 同步用户游戏操作
+	 */
+	public void synchronize(){
+		
+	}
+	
+}

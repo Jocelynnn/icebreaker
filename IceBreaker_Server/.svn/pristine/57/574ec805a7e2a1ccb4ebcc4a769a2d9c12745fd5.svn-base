@@ -1,0 +1,59 @@
+package team.mosaic.icebreaker.net;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class ServerThread extends Thread {
+	private ServerSocket ss;
+	private Socket s;
+	
+	private BufferedReader br;
+	private PrintWriter pw;
+	private String message;
+	
+	public ServerThread(ServerSocket ss,Socket s){
+		this.ss = ss;
+		this.s = s;
+	}
+	
+	public void run(){
+		try {
+			br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+			pw = new PrintWriter(s.getOutputStream());
+			while (true) {
+				message = br.readLine();
+				System.out.println("server "+message);
+				dealWithMessage(message);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void sendMessage(String msg){
+		pw.println(msg);
+		pw.flush();
+	}
+	
+	private void dealWithMessage(String msg){
+		String[] split = msg.split(" ");
+		
+		switch (split[0]) {
+		case "login":
+			if(split[1].equals(split[2]))
+				sendMessage("login true");
+			else 
+				sendMessage("login false");
+			break;
+
+		default:
+			break;
+		}
+	}
+	
+}

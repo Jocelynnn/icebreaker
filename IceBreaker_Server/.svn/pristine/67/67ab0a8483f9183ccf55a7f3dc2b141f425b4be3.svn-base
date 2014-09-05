@@ -1,0 +1,105 @@
+package team.mosaic.icebreaker.playerstructure;
+
+import java.io.IOException;
+
+import team.mosaic.icebreaker.vo.ColorQueueVO;
+import team.mosaic.icebreaker.vo.MessageVO;
+import team.mosaic.icebreaker.vo.SwapActionVO;
+
+
+public class CooperationPair {
+
+	private int mark;//用于同步用户操作；
+	
+	private Player p1;//p1默认为主机
+	private Player p2;
+	
+	/**
+	 * 构造函数，建立协作关系（由第二玩家执行）
+	 * @param p1 玩家1
+	 * @param p2 玩家2
+	 */
+	public CooperationPair(Player p1,Player p2){
+		mark = 0;
+		this.p1 = p1;
+		this.p2 = p2;
+		link();
+	}
+	
+	/**
+	 * 与第一玩家建立联系
+	 */
+	private void link(){
+		p1.setCooperationPair(this);
+		try {
+			System.out.println("main:"+p1.getID());
+			System.out.println("sub:"+p2.getID());
+			p1.sendMessage(new MessageVO("findpair", p2.getID()));
+			p2.sendMessage(new MessageVO("findpair", p1.getID()));
+			p1.setFree(false);
+			p2.setFree(false);
+			p1.sendMessage(new MessageVO("sethost", null));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * 接到主机的初始化盘面后发给另一个玩家
+	 * @param grids
+	 */
+	public void init(Object obj){
+		try {
+			p2.sendMessage(new MessageVO("sendqueue", obj));
+			Thread thread = new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					try {
+						Thread.sleep(2000);
+						p1.sendMessage(new MessageVO("startcoop", null));
+						p2.sendMessage(new MessageVO("startcoop", null));
+					} catch (InterruptedException | IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			});
+			thread.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * 断开协作连接
+	 */
+	public void dismiss(){
+		p1.setCooperationPair(null);
+		p2.setCooperationPair(null);
+	}
+	/**
+	 * 结算结果
+	 */
+	public void end(){
+		p1.setFree(true);
+		p2.setFree(true);
+	}
+	/**
+	 * 同步用户游戏操作
+	 */
+	public void synchronize(SwapActionVO svo){
+		if(svo.getMark()==this.mark){//同步成功
+			try {
+				p1.sendMessage(new MessageVO("act", svo));
+				p2.sendMessage(new MessageVO("act", svo));
+				mark ++;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+}

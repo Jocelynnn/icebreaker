@@ -1,0 +1,71 @@
+package team.mosaic.icebreaker.playerstructure;
+
+/**
+ * 随即匹配排队队列
+ * @author HJW
+ *
+ */
+public class RandomQueue {
+
+	private WaitNode first;//队首结点
+	private WaitNode last;//队尾结点
+	private int count;//队列人数
+	
+	/**
+	 * 将玩家排入队列
+	 * @param player 排队玩家
+	 */
+	public void queueUp(Player player){
+		WaitNode node = new WaitNode(player);
+		if(count == 0){//队列为空时，排队人直接成为队首(队尾)
+			first = node;
+			last = node;
+		}
+		else{//队列不为空，排到队尾
+			last.setNext(node);
+			last = node;
+		}
+		count ++;
+		if(count >= 2)//人数足够则开始游戏
+			startGame();
+	}
+	/**
+	 * 玩家放弃排队
+	 * @param player 排队玩家
+	 */
+	public void quitQueue(Player player){
+		if(count == 1 && first.getPlayer().getID().equals(player.getID())){
+			first = null;
+			last = null;
+			count --;
+		}
+	}
+	/**
+	 * 得到队首玩家
+	 * @return 队首玩家
+	 */
+	private Player getTurn(){
+		Player ret = null;
+		if(count == 1){//队列只有一个人
+			ret = first.getPlayer();
+			first = null;
+			last = null;
+			count --;
+		}
+		else if(count > 1){//队列有至少两个人
+			ret = first.getPlayer();
+			first = first.getNext();
+			count --;
+		}
+		return ret;
+	}
+	/**
+	 * 开始游戏
+	 */
+	private void startGame(){
+		Player p1 = getTurn();
+		Player p2 = getTurn();
+		p2.setCooperationPair(new CooperationPair(p1, p2));
+	}
+	
+}

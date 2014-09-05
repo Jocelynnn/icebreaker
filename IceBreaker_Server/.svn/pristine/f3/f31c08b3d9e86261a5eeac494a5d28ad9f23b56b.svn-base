@@ -1,0 +1,118 @@
+package team.mosaic.icebreaker.net;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import org.omg.PortableServer.ID_ASSIGNMENT_POLICY_ID;
+
+import team.mosaic.icebreaker.service.BLService;
+import team.mosaic.icebreaker.serviceimp.ServiceImp;
+import team.mosaic.icebreaker.vo.AccountVO;
+import team.mosaic.icebreaker.vo.MessageVO;
+
+public class ServerThread extends Thread {
+//	private ServerSocket ss;
+	private MyServerSocket mss;
+	private Socket s;
+
+	// private BufferedReader br;
+	// private PrintWriter pw;
+	private ObjectInputStream ois;
+	private ObjectOutputStream oos;
+	private MessageVO mvo;
+	// private String message;
+	private BLService logic;
+	private String id;
+
+	public ServerThread(MyServerSocket mss, Socket s) {
+		this.mss = mss;
+		this.s = s;
+		logic = new ServiceImp();
+	}
+
+	@SuppressWarnings("deprecation")
+	public void run() {
+		try {
+			// br = new BufferedReader(new
+			// InputStreamReader(s.getInputStream()));
+			// pw = new PrintWriter(s.getOutputStream());
+			ois = new ObjectInputStream(s.getInputStream());
+			oos = new ObjectOutputStream(s.getOutputStream());
+			while (true) {
+				// message = br.readLine();
+				// dealWithMessage(message);
+				mvo = (MessageVO) ois.readObject();
+				dealWithMessage(mvo);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			if(id!=null)
+				mss.removeMember(this);
+			this.stop();
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	// private void sendMessage(String msg){
+	// pw.println(msg);
+	// pw.flush();
+	// }
+
+	public String getID(){
+		return id;
+	}
+	
+	private void sendMessage(MessageVO mvo) throws IOException {
+		oos.writeObject(mvo);
+		oos.flush();
+	}
+
+	private void dealWithMessage(MessageVO mvo) throws IOException {
+		String cmd = mvo.getCommand();
+		String recmd = "re" + cmd;
+		MessageVO response = null;
+
+		switch (cmd) {
+		case "signin":
+			AccountVO avo = (AccountVO) mvo.getObject();
+			boolean result = logic.verify(avo);
+			if(result){//登陆成功
+				id = avo.getID();
+				mss.addMember(this);
+			}
+			response = new MessageVO(recmd, result);
+			sendMessage(response);
+			break;
+
+		default:
+			break;
+		}
+		// String[] split = msg.split(" ");
+		//
+		// switch (split[0]) {
+		// case "login":
+		// if(split[1].equals(split[2]))
+		// sendMessage("login true");
+		// else
+		// sendMessage("login false");
+		// break;
+		// case "click":
+		// int x = Integer.parseInt(split[1]);
+		// int y = Integer.parseInt(split[2]);
+		// System.out.println("客户端点击："+x+","+y);
+		// break;
+		// default:
+		// break;
+		// }
+	}
+
+}

@@ -1,0 +1,34 @@
+package team.mosaic.icebreaker.serviceimp;
+
+import java.util.ArrayList;
+
+import team.mosaic.icebreaker.dto.AccountDTO;
+import team.mosaic.icebreaker.service.AccountService;
+import team.mosaic.icebreaker.vo.AccountVO;
+
+public class AccountServiceImp  implements AccountService{
+
+	private AccountDTO adto = new AccountDTO();
+
+	@Override
+	public boolean verify(AccountVO avo) {
+		// TODO Auto-generated method stub
+		if (avo.getPassword().equals(adto.getpassword(avo.getID()))) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean register(AccountVO avo) {
+		// TODO Auto-generated method stub
+		ArrayList<String> list = adto.getAllAccount();
+		for(String i:list){
+			if(i.equals(avo.getID()))
+				return false;
+		}
+		adto.addID(avo.getID(), avo.getPassword());
+		return true;
+	}
+
+}

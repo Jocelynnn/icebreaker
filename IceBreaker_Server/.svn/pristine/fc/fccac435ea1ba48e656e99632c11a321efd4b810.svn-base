@@ -1,0 +1,202 @@
+package team.mosaic.icebreaker.playerstructure;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.ArrayList;
+
+import team.mosaic.icebreaker.net.MyServerSocket;
+import team.mosaic.icebreaker.service.AccountService;
+import team.mosaic.icebreaker.service.GameService;
+import team.mosaic.icebreaker.service.InfoService;
+import team.mosaic.icebreaker.serviceimp.AccountServiceImp;
+import team.mosaic.icebreaker.serviceimp.GameServiceImp;
+import team.mosaic.icebreaker.serviceimp.InfoServiceImp;
+import team.mosaic.icebreaker.vo.AccountVO;
+import team.mosaic.icebreaker.vo.GainVO;
+import team.mosaic.icebreaker.vo.MessageVO;
+import team.mosaic.icebreaker.vo.ReplyVO;
+/**
+ * 玩家类，负责与客户端玩家的交互
+ * @author HJW
+ *
+ */
+public class Player extends Thread {
+	private String id;//玩家id
+	private MyServerSocket mss;
+	private Socket s;
+
+	private ObjectInputStream ois;//输入
+	private ObjectOutputStream oos;//输出
+	private MessageVO mvo;//消息包
+	private AccountService accountService;//帐户业务逻辑对象
+	private GameService gameService;//游戏业务逻辑对象
+	private InfoService infoService;//个人信息业务逻辑对象
+	//玩家交互
+	private CooperationPair coop;//协作双方对象
+	private CompetitionPair comp;//pk双方对象
+
+	public Player(MyServerSocket mss, Socket s) {
+		this.mss = mss;
+		this.s = s;
+		accountService = new AccountServiceImp();
+		gameService = new GameServiceImp();
+		infoService = new InfoServiceImp();
+	}
+
+	public void run() {
+		try {
+			ois = new ObjectInputStream(s.getInputStream());
+			oos = new ObjectOutputStream(s.getOutputStream());
+			while (true) {
+				mvo = (MessageVO) ois.readObject();
+				dealWithMessage(mvo);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			shut();
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * 得到玩家id
+	 * @return 玩家id
+	 */
+	public String getID() {
+		return id;
+	}
+	
+	public void setCooperationPair(CooperationPair cp){
+		this.coop = cp;
+	}
+	
+	public void setCompetitionPair(CompetitionPair cp){
+		this.comp = cp;
+	}
+	
+	/**
+	 * 结束该玩家线程
+	 */
+	@SuppressWarnings("deprecation")
+	private void shut(){
+		if (id != null)
+			mss.removeMember(this);
+		System.out.println(id+" logoff");
+		this.stop();
+	}
+	/**
+	 * 发送消息给客户端
+	 * @param mvo 消息包
+	 * @throws IOException
+	 */
+	private void sendMessage(MessageVO mvo) throws IOException {
+		oos.writeObject(mvo);
+		oos.flush();
+	}
+	/**
+	 * 处理接收到的客户端消息
+	 * @param mvo 消息包
+	 * @throws IOException
+	 */
+	private void dealWithMessage(MessageVO mvo) throws IOException {
+		String cmd = mvo.getCommand();
+		String recmd = "re-" + cmd;
+
+		switch (cmd) {
+		case "register"://注册
+			AccountVO avo2 = (AccountVO) mvo.getObject();
+			boolean isRegistered = accountService.register(avo2);
+			sendMessage(new MessageVO(recmd, isRegistered));
+			break;
+		case "signin"://登陆
+			AccountVO avo = (AccountVO) mvo.getObject();
+			boolean isVerified = accountService.verify(avo);
+			if (isVerified) {// 登陆成功
+				id = avo.getID();
+				mss.addMember(this);
+				System.out.println(id+" login");
+			}
+			sendMessage(new MessageVO(recmd, isVerified));
+			break;
+		case "signout"://注销
+			shut();
+			break;
+		case "info"://个人信息
+			sendMessage(new MessageVO(recmd, infoService.getInfo(id)));
+			break;
+		case "friendrank"://好友排行榜
+			sendMessage(new MessageVO(recmd, infoService.getFriendRank(id)));
+			break;
+		case "worldrank"://世界排行榜
+			sendMessage(new MessageVO(recmd, infoService.getWorldRank()));
+			break;
+		case "mytool"://我的道具
+			sendMessage(new MessageVO(recmd, infoService.getMyTools(id)));
+			break;
+		case "usetool"://使用道具
+			gameService.useTool(id, (String)mvo.getObject());
+			break;
+		case "buytool"://购买道具
+			gameService.buyTool(id, (String)mvo.getObject());
+			break;
+		case "act"://请求游戏操作
+			break;
+		case "onlinepal"://在线好友
+			ArrayList<String> palStrings = infoService.getMyFriends(id);
+			for(String s:palStrings){
+				if(mss.getPlayer(s) == null)
+					palStrings.remove(s);
+			}
+			sendMessage(new MessageVO(recmd, palStrings));
+			break;
+		case "coopwithpal"://请求与好友协作游戏
+			String coopID = (String)mvo.getObject();
+			Player coopPal = mss.getPlayer(coopID);
+			coopPal.sendMessage(new MessageVO(recmd, id));
+			break;
+		case "cooprandom"://请求随即匹配协作游戏
+			break;
+		case "replycoop"://答复协作游戏
+			ReplyVO rvo = (ReplyVO)mvo.getObject();
+			String repliedID = rvo.getPalID();
+			Player repliedPlayer = mss.getPlayer(repliedID);
+			boolean agree = rvo.getAgreement();
+			repliedPlayer.sendMessage(new MessageVO(recmd, new ReplyVO(agree,repliedID)));//告诉对方是否同意协作
+			if(agree)//如果同意，自己开始游戏
+				sendMessage(new MessageVO("agreecoop", repliedID));
+			break;
+		case "pkwithpal"://请求与好友pk
+			String pkID = (String)mvo.getObject();
+			Player pkPal = mss.getPlayer(pkID);
+			pkPal.sendMessage(new MessageVO(recmd, id));
+			break;
+		case "pkrandom"://请求随即匹配pk游戏
+			break;
+		case "replypk"://答复pk
+			break;
+		case "endsingle"://结算个人游戏
+			GainVO gvo = (GainVO)mvo.getObject();
+			boolean isAdvance = gameService.submitScore(id, gvo);
+			sendMessage(new MessageVO(recmd, isAdvance));
+			break;
+		default://没找到相应命令
+			System.out.println("Undefined instruction.");
+			break;
+		}
+	}
+
+	private Player getRandomPlayer(){
+		Player ret = null;
+		int num = mss.getCount();
+		int random = (int)(Math.random()*num);
+		do{
+			ret = mss.getPlayerByIndex(random);
+		}while(ret.getID().equals(id));
+		return ret;
+	}
+	
+}

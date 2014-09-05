@@ -1,0 +1,36 @@
+package team.mosaic.icebreaker.utility;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class FileIO {
+
+	private static final File TOOL_FILE = new File("info/tools_info");
+
+	/**
+	 * 得到道具价格
+	 * 
+	 * @param tool_id 道具id
+	 * @return 价格
+	 */
+	public static int getCost(String tool_id) {
+		int ret = 0;
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(TOOL_FILE));
+			String line = null;
+			while ((line = br.readLine()) != null) {
+				String[] split = line.split(":");
+				if (split[0].equals(tool_id))
+					ret = Integer.parseInt(split[1]);
+			}
+			br.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return ret;
+	}
+
+}

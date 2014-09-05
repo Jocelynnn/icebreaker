@@ -1,0 +1,9 @@
+package team.mosaic.icebreaker.service;
+
+public interface BLService {
+	
+	public boolean verify(String id,String pwd);
+	
+	
+	
+}

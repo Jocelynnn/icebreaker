@@ -1,0 +1,96 @@
+package team.mosaic.icebreaker.net;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+
+import team.mosaic.icebreaker.service.AccountService;
+import team.mosaic.icebreaker.service.GameService;
+import team.mosaic.icebreaker.serviceimp.AccountServiceImp;
+import team.mosaic.icebreaker.serviceimp.GameServiceImp;
+import team.mosaic.icebreaker.vo.AccountVO;
+import team.mosaic.icebreaker.vo.GainVO;
+import team.mosaic.icebreaker.vo.MessageVO;
+
+public class ServerThread extends Thread {
+	private MyServerSocket mss;
+	private Socket s;
+
+	private ObjectInputStream ois;
+	private ObjectOutputStream oos;
+	private MessageVO mvo;
+	private AccountService accountService;
+	private GameService gameService;
+	private String id;
+
+	public ServerThread(MyServerSocket mss, Socket s) {
+		this.mss = mss;
+		this.s = s;
+		accountService = new AccountServiceImp();
+		gameService = new GameServiceImp();
+	}
+
+	@SuppressWarnings("deprecation")
+	public void run() {
+		try {
+			ois = new ObjectInputStream(s.getInputStream());
+			oos = new ObjectOutputStream(s.getOutputStream());
+			while (true) {
+				mvo = (MessageVO) ois.readObject();
+				dealWithMessage(mvo);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			if (id != null)
+				mss.removeMember(this);
+			System.out.println(id+" logoff");
+			this.stop();
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public String getID() {
+		return id;
+	}
+
+	private void sendMessage(MessageVO mvo) throws IOException {
+		oos.writeObject(mvo);
+		oos.flush();
+	}
+
+	private void dealWithMessage(MessageVO mvo) throws IOException {
+		String cmd = mvo.getCommand();
+		String recmd = "re-" + cmd;
+
+		switch (cmd) {
+		case "register":
+			AccountVO avo2 = (AccountVO) mvo.getObject();
+			boolean isRegistered = accountService.register(avo2);
+			sendMessage(new MessageVO(recmd, isRegistered));
+			break;
+		case "signin":
+			AccountVO avo = (AccountVO) mvo.getObject();
+			boolean isVerified = accountService.verify(avo);
+			if (isVerified) {// µÇÂ½³É¹¦
+				id = avo.getID();
+				mss.addMember(this);
+				System.out.println(id+" login");
+			}
+			sendMessage(new MessageVO(recmd, isVerified));
+			break;
+		case "endsingle":
+			GainVO gvo = (GainVO)mvo.getObject();
+			boolean isAdvance = gameService.submitScore(id, gvo);
+			sendMessage(new MessageVO(recmd, isAdvance));
+			break;
+		default:
+			System.out.println("Undefined instruction.");
+			break;
+		}
+	}
+
+}

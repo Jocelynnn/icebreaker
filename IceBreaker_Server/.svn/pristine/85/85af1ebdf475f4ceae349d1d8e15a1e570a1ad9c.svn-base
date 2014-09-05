@@ -1,0 +1,98 @@
+package team.mosaic.icebreaker.net;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+
+import team.mosaic.icebreaker.playerstructure.Player;
+
+public class MyServerSocket {
+
+	private ServerSocket ss;
+	private Socket s;
+	private ArrayList<Player> sockets;
+	private int count;
+	private ServerPanel ui;
+	private MyServerSocket self;
+	private boolean isSetUp;
+
+	public MyServerSocket(ServerPanel ui) {
+		this.ui = ui;
+		self = this;
+		try {
+			ss = new ServerSocket(8888);
+			sockets = new ArrayList<>();
+			listenClient();
+			isSetUp = true;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void listenClient() {
+		Thread t = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				while (true) {
+					try {
+						s = ss.accept();
+						System.out.println("ÒÑÁ¬½Ó" + s.getPort() + " " + count);
+						Player p = new Player(self, s);
+						p.start();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		t.start();
+	}
+
+	public Player getPlayer(String id){
+		for(Player p:sockets){
+			if(p.getID().equals(id))
+				return p;
+		}
+		return null;
+	}
+	
+	public void shut(){
+		try {
+			ss.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean getState(){
+		return isSetUp;
+	}
+	
+	private void increCount(){
+		count ++;
+		ui.updateCount(count);
+	}
+	
+	private void decreCount(){
+		count --;
+		ui.updateCount(count);
+	}
+	
+	public void addMember(Player st){
+		increCount();
+		sockets.add(st);
+	}
+	
+	public void removeMember(Player st){
+		if(st.getID()!=null)
+			decreCount();
+		sockets.remove(st);
+	}
+	
+}

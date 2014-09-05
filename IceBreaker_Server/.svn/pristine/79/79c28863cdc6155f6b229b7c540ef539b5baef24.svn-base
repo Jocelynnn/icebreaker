@@ -1,0 +1,81 @@
+package team.mosaic.icebreaker.net;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+
+import team.mosaic.icebreaker.service.BLService;
+import team.mosaic.icebreaker.serviceimp.ServiceImp;
+import team.mosaic.icebreaker.vo.AccountVO;
+import team.mosaic.icebreaker.vo.MessageVO;
+
+public class ServerThread extends Thread {
+	private MyServerSocket mss;
+	private Socket s;
+
+	private ObjectInputStream ois;
+	private ObjectOutputStream oos;
+	private MessageVO mvo;
+	private BLService logic;
+	private String id;
+
+	public ServerThread(MyServerSocket mss, Socket s) {
+		this.mss = mss;
+		this.s = s;
+		logic = new ServiceImp();
+	}
+
+	@SuppressWarnings("deprecation")
+	public void run() {
+		try {
+			ois = new ObjectInputStream(s.getInputStream());
+			oos = new ObjectOutputStream(s.getOutputStream());
+			while (true) {
+				mvo = (MessageVO) ois.readObject();
+				dealWithMessage(mvo);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			if (id != null)
+				mss.removeMember(this);
+			System.out.println(id+" logoff");
+			this.stop();
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public String getID() {
+		return id;
+	}
+
+	private void sendMessage(MessageVO mvo) throws IOException {
+		oos.writeObject(mvo);
+		oos.flush();
+	}
+
+	private void dealWithMessage(MessageVO mvo) throws IOException {
+		String cmd = mvo.getCommand();
+		String recmd = "re" + cmd;
+
+		switch (cmd) {
+		case "signin":
+			AccountVO avo = (AccountVO) mvo.getObject();
+			boolean result = logic.verify(avo);
+			if (result) {// µÇÂ½³É¹¦
+				id = avo.getID();
+				mss.addMember(this);
+				System.out.println(id+" login");
+			}
+			sendMessage(new MessageVO(recmd, result));
+			break;
+
+		default:
+			break;
+		}
+	}
+
+}

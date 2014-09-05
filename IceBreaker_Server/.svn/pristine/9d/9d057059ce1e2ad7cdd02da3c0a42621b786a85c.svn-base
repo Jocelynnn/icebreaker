@@ -1,0 +1,13 @@
+package team.mosaic.icebreaker.serviceimp;
+
+import team.mosaic.icebreaker.service.BLService;
+
+public class ServiceImp implements BLService{
+
+	@Override
+	public boolean verify(String id, String pwd) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+}

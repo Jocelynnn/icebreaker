@@ -1,0 +1,27 @@
+package team.mosaic.icebreaker.vo;
+
+import java.io.Serializable;
+
+public class ResultVO implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3218488234729294292L;
+	private boolean isRecordBroken;
+	private boolean isLevelUp;
+	
+	public ResultVO(boolean isRecordBroken,boolean isLevelUp){
+		this.isRecordBroken = isRecordBroken;
+		this.isLevelUp = isLevelUp;
+	}
+	
+	public boolean getRecordBroken(){
+		return isRecordBroken;
+	}
+	
+	public boolean getLevelUp(){
+		return isLevelUp;
+	}
+	
+}

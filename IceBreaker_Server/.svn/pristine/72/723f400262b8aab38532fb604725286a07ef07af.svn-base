@@ -1,0 +1,33 @@
+package team.mosaic.icebreaker.service;
+
+import java.util.ArrayList;
+
+import team.mosaic.icebreaker.vo.InfoVO;
+import team.mosaic.icebreaker.vo.ScoreVO;
+import team.mosaic.icebreaker.vo.ToolVO;
+
+public interface InfoService {
+	/**
+	 * 得到玩家个人信息
+	 * @param id 玩家id
+	 * @return 玩家个人信息
+	 */
+	public InfoVO getInfo(String id);
+	/**
+	 * 得到玩家的好友排行榜
+	 * @param id 玩家id
+	 * @return 排行榜（id和对应成绩）
+	 */
+	public ArrayList<ScoreVO> getFriendRank(String id);
+	/**
+	 * 得到世界排行榜
+	 * @return 排行榜（id和对应成绩）
+	 */
+	public ArrayList<ScoreVO> getWorldRank();
+	/**
+	 * 得到我的道具
+	 * @param 玩家id
+	 * @return 我的道具
+	 */
+	public ArrayList<ToolVO> getMyTools(String id);
+}

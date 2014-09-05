@@ -1,0 +1,42 @@
+package team.mosaic.icebreaker.playerstructure;
+
+import java.io.IOException;
+
+import team.mosaic.icebreaker.vo.MessageVO;
+
+
+public class CompetitionPair {
+	
+	private Player p1;
+	private Player p2;
+	
+	public CompetitionPair(Player p1,Player p2){
+		this.p1 = p1;
+		this.p2 = p2;
+		link();
+	}
+	
+	private void link(){
+		p1.setCompetitionPair(this);
+		try {
+			p1.sendMessage(new MessageVO("startpk", p2.getID()));
+			p2.sendMessage(new MessageVO("startpk", p1.getID()));
+			p1.setFree(false);
+			p2.setFree(false);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void dismiss(){
+		p1.setCompetitionPair(null);
+		p2.setCompetitionPair(null);
+	}
+	
+	public void end(){
+		p1.setFree(true);
+		p2.setFree(true);
+	}
+	
+}

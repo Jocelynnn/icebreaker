@@ -1,0 +1,25 @@
+package team.mosaic.icebreaker.service;
+
+import team.mosaic.icebreaker.vo.AccountVO;
+
+public interface BLService {
+	/**
+	 * 验证登陆信息
+	 * @param avo 登陆信息
+	 * @return 是否登陆成功
+	 */
+	public boolean verify(AccountVO avo);
+	/**
+	 * 使用道具
+	 * @param id 用户id
+	 * @param tool_id 道具id
+	 */
+	public void useTool(String id,String tool_id);
+	/**
+	 * 购买道具
+	 * @param id 用户id
+	 * @param tool_id 道具id
+	 */
+	public void buyTool(String id,String tool_id);
+	
+}

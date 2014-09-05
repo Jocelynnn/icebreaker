@@ -1,0 +1,107 @@
+package team.mosaic.icebreaker.playerstructure;
+
+import java.io.IOException;
+
+import team.mosaic.icebreaker.vo.MessageVO;
+
+public class CooperationFoursome {
+
+	private int mark;
+	private Player p1;
+	private Player p2;
+	private Player p3;
+	private Player p4;
+	private MessageVO findMessage;
+	
+	public CooperationFoursome(Player p1,Player p2,Player p3,Player p4){
+		mark = 0;
+		this.p1 = p1;
+		this.p2 = p2;
+		this.p3 = p3;
+		this.p4 = p4;
+		p1.setHost(true);
+		findMessage = new MessageVO("findgroup",new String[]{p1.getID(), p2.getID(), p3.getID(), p4.getID()});
+		link();
+	}
+	/**
+	 * 四个玩家建立连接
+	 */
+	private void link(){
+		p1.setCooperationFoursome(this);
+		p2.setCooperationFoursome(this);
+		p3.setCooperationFoursome(this);
+		p4.setCooperationFoursome(this);
+		try {
+			p1.sendMessage(findMessage);
+			p2.sendMessage(findMessage);
+			p3.sendMessage(findMessage);
+			p4.sendMessage(findMessage);
+			p1.setFree(false);
+			p2.setFree(false);
+			p3.setFree(false);
+			p4.setFree(false);
+			p1.sendMessage(new MessageVO("sethost", null));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * 接到主机的初始化盘面后发给其他玩家
+	 * @param grids
+	 */
+	public void init(Object obj){
+		try {
+			p2.sendMessage(new MessageVO("sendqueue", obj));
+			p3.sendMessage(new MessageVO("sendqueue", obj));
+			p4.sendMessage(new MessageVO("sendqueue", obj));
+			Thread thread = new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					try {
+						Thread.sleep(2000);
+						p1.sendMessage(new MessageVO("startcoop", null));
+						p2.sendMessage(new MessageVO("startcoop", null));
+						p3.sendMessage(new MessageVO("startcoop", null));
+						p4.sendMessage(new MessageVO("startcoop", null));
+					} catch (InterruptedException | IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			});
+			thread.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * 断开连接
+	 */
+	public void dismiss(){
+		p1.setCooperationFoursome(null);
+		p2.setCooperationFoursome(null);
+		p3.setCooperationFoursome(null);
+		p4.setCooperationFoursome(null);
+		p1.setHost(false);
+	}
+	/**
+	 * 结算结果
+	 */
+	public void end(){
+		p1.setFree(true);
+		p2.setFree(true);
+		p3.setFree(true);
+		p4.setFree(true);
+	}
+	/**
+	 * 同步用户游戏操作
+	 */
+	public void synchronize(){
+		
+	}
+	
+}

@@ -1,0 +1,42 @@
+package team.mosaic.icebreaker.playerstructure;
+
+
+public class CooperationPair {
+
+	private int step;//用户同步用户操作；
+	
+	private Player p1;
+	private Player p2;
+	
+	public CooperationPair(Player p1,Player p2){
+		step = 0;
+		this.p1 = p1;
+		this.p2 = p2;
+		link();
+	}
+	
+	private void link(){
+		p1.setCooperationPair(this);
+		p2.setCooperationPair(this);
+	}
+	/**
+	 * 断开协作连接
+	 */
+	public void dismiss(){
+		p1.setCooperationPair(null);
+		p2.setCooperationPair(null);
+	}
+	/**
+	 * 结算结果
+	 */
+	public void end(){
+		
+	}
+	/**
+	 * 同步用户游戏操作
+	 */
+	public void synchronize(){
+		
+	}
+	
+}

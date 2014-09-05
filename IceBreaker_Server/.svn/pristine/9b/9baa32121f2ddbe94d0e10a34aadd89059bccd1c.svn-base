@@ -1,0 +1,59 @@
+package team.mosaic.icebreaker.playerstructure;
+
+import java.io.IOException;
+
+import team.mosaic.icebreaker.vo.MessageVO;
+import team.mosaic.icebreaker.vo.ResultVO;
+
+
+public class CompetitionPair {
+	
+	private Player p1;
+	private Player p2;
+	
+	private int endCount;
+	
+	public CompetitionPair(Player p1,Player p2){
+		this.p1 = p1;
+		this.p2 = p2;
+		endCount = 0;
+		p1.setHost(true);
+		link();
+	}
+	
+	private void link(){
+		p1.setCompetitionPair(this);
+		try {
+			p1.sendMessage(new MessageVO("startpk", p2.getID()));
+			p2.sendMessage(new MessageVO("startpk", p1.getID()));
+			p1.setFree(false);
+			p2.setFree(false);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void dismiss(){
+		p1.setCompetitionPair(null);
+		p2.setCompetitionPair(null);
+		p1.setHost(false);
+		p1.setFree(true);
+		p2.setFree(true);
+	}
+	
+	public void end(){
+		endCount ++;
+		if(endCount == 2){
+			try {
+				p1.sendMessage(new MessageVO("pkresult", new ResultVO(false, p1.getResult().getLevelUp(), p2.getScore())));
+				p2.sendMessage(new MessageVO("pkresult", new ResultVO(false, p2.getResult().getLevelUp(), p1.getScore())));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			dismiss();
+		}
+	}
+	
+}

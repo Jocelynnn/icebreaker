@@ -1,0 +1,42 @@
+package team.mosaic.icebreaker.serviceimp;
+
+import team.mosaic.icebreaker.dto.AccountDTO;
+import team.mosaic.icebreaker.dto.ToolDTO;
+import team.mosaic.icebreaker.service.BLService;
+import team.mosaic.icebreaker.vo.AccountVO;
+
+public class ServiceImp  implements BLService{
+
+	private AccountDTO adto = new AccountDTO();
+
+
+	public boolean verify(AccountVO avo) {
+		// TODO Auto-generated method stub
+		
+		if (avo.getPassword().equals(adto.getpassword(avo.getID()))) {
+			return true;
+		}
+		return false;
+	}
+
+
+	public void useTool(String id, String tool_id) {
+		// TODO Auto-generated method stub
+		ToolDTO tDto = new ToolDTO();
+		tDto.usetool(id, tool_id);
+	}
+
+	
+	public void buyTool(String id, String tool_id) {
+		// TODO Auto-generated method stub
+		ToolDTO tDto = new ToolDTO();
+		tDto.buytool(id, tool_id, 1);
+	}
+	
+	public static void main(String[] args){
+		ServiceImp service = new ServiceImp();
+		AccountVO accountVO = new AccountVO("2", "4");
+		System.out.println(service.verify(accountVO));
+	}
+
+}

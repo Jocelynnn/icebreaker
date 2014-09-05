@@ -1,0 +1,71 @@
+package team.mosaic.icebreaker.serviceimp;
+
+import java.util.ArrayList;
+import java.util.Collections;
+
+import team.mosaic.icebreaker.dto.AccountDTO;
+import team.mosaic.icebreaker.dto.FriendDTO;
+import team.mosaic.icebreaker.dto.InfoDTO;
+import team.mosaic.icebreaker.dto.ToolDTO;
+import team.mosaic.icebreaker.service.InfoService;
+import team.mosaic.icebreaker.utility.CommonSort;
+import team.mosaic.icebreaker.utility.RankSort;
+import team.mosaic.icebreaker.vo.InfoVO;
+import team.mosaic.icebreaker.vo.ScoreVO;
+import team.mosaic.icebreaker.vo.ToolVO;
+
+public class InfoServiceImp implements InfoService {
+
+	private AccountDTO adto = new AccountDTO();
+	private InfoDTO idto = new InfoDTO();
+	private FriendDTO fdto = new FriendDTO();
+	private ToolDTO tdto = new ToolDTO();
+
+	@Override
+	public InfoVO getInfo(String id) {
+		// TODO Auto-generated method stub
+		return new InfoVO(id, idto.getLevel(id), idto.getExp(id),
+				idto.getScore(id), idto.getCoin(id));
+	}
+
+	@Override
+	public ArrayList<ScoreVO> getFriendRank(String id) {
+		// TODO Auto-generated method stub
+		ArrayList<ScoreVO> ret = new ArrayList<>();
+		ArrayList<String> friends = fdto.getFriends(id);
+		for (String fid : friends) {
+			ret.add(new ScoreVO(fid, idto.getScore(fid)));
+		}
+		ret.add(new ScoreVO(id, idto.getScore(id)));//添加自己
+		Collections.sort(ret, new RankSort());
+		return ret;
+	}
+
+	@Override
+	public ArrayList<ScoreVO> getWorldRank() {
+		// TODO Auto-generated method stub
+		ArrayList<ScoreVO> ret = new ArrayList<>();
+		ArrayList<String> world = adto.getAllAccount();
+		for (String id : world) {
+			ret.add(new ScoreVO(id, idto.getScore(id)));
+		}
+		Collections.sort(ret, new RankSort());
+		return ret;
+	}
+
+	@Override
+	public ArrayList<ToolVO> getMyTools(String id) {
+		// TODO Auto-generated method stub
+		//得到所有道具id？
+		return null;
+	}
+
+	@Override
+	public ArrayList<String> getMyFriends(String id) {
+		// TODO Auto-generated method stub
+		ArrayList<String> friends = fdto.getFriends(id);
+		Collections.sort(friends, new CommonSort());
+		return friends;
+	}
+
+}

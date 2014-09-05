@@ -1,0 +1,49 @@
+package team.mosaic.icebreaker.serviceimp;
+
+import team.mosaic.icebreaker.dto.InfoDTO;
+import team.mosaic.icebreaker.dto.ToolDTO;
+import team.mosaic.icebreaker.service.GameService;
+import team.mosaic.icebreaker.utility.FileIO;
+import team.mosaic.icebreaker.vo.GainVO;
+import team.mosaic.icebreaker.vo.ResultVO;
+
+public class GameServiceImp implements GameService{
+
+	private InfoDTO idto = new InfoDTO();
+	private ToolDTO tdto = new ToolDTO();
+	
+	@Override
+	public ResultVO submitScore(String id, GainVO gvo) {
+		// TODO Auto-generated method stub
+		boolean isRecordBroken = false;
+		boolean isLevelUp = false;
+		
+		int oldScore = idto.getScore(id);
+		int oldExp = idto.getExp(id);
+		int oldCoin = idto.getExp(id);
+		idto.changeCoin(id, oldCoin+gvo.getCoin());
+		idto.changeExp(id, oldExp+gvo.getExp());
+		if(gvo.getScore() > oldScore){
+			idto.changeScore(id, gvo.getScore());
+			isRecordBroken = true;
+		}
+		//Éý¼¶²ßÂÔ...
+		return new ResultVO(isRecordBroken, isLevelUp);
+	}
+
+	@Override
+	public void buyTool(String id, String tool_id) {
+		// TODO Auto-generated method stub
+		int cost = FileIO.getCost(tool_id);
+		int coin = idto.getCoin(id);
+		idto.changeCoin(id, coin-cost);
+		tdto.buytool(id, tool_id, 1);
+	}
+
+	@Override
+	public void useTool(String id, String tool_id) {
+		// TODO Auto-generated method stub
+		tdto.usetool(id, tool_id);
+	}
+	
+}

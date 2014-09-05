@@ -1,0 +1,26 @@
+package team.mosaic.icebreaker.service;
+
+import team.mosaic.icebreaker.vo.GainVO;
+
+public interface GameService {
+	/**
+	 * 提交单人游戏分数
+	 * @param id 玩家id
+	 * @param gvo 游戏获得（包括得分，经验，金币）
+	 * @return 是否刷新记录
+	 */
+	public boolean submitScore(String id,GainVO gvo);
+	/**
+	 * 购买道具
+	 * @param id 玩家id
+	 * @param tool_id 道具id
+	 */
+	public void buyTool(String id,String tool_id);
+	/**
+	 * 使用道具
+	 * @param id 玩家id
+	 * @param tool_id 道具id
+	 */
+	public void useTool(String id,String tool_id);
+	
+}

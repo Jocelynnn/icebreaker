@@ -1,0 +1,39 @@
+package team.mosaic.icebreaker.vo;
+
+import java.io.Serializable;
+
+public class GroupVO implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private String id1;
+	private String id2;
+	private String id3;
+	private String id4;
+	
+	public GroupVO(String id1,String id2,String id3,String id4){
+		this.id1 = id1;
+		this.id2 = id2;
+		this.id3 = id3;
+		this.id4 = id4;
+	}
+	
+	public String getID1(){
+		return id1;
+	}
+	
+	public String getID2(){
+		return id2;
+	}
+	
+	public String getID3(){
+		return id3;
+	}
+	
+	public String getID4(){
+		return id4;
+	}
+	
+}

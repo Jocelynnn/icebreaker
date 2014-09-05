@@ -1,0 +1,78 @@
+package team.mosaic.icebreaker.net;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import team.mosaic.icebreaker.vo.MessageVO;
+
+public class ServerThread extends Thread {
+	private ServerSocket ss;
+	private Socket s;
+	
+//	private BufferedReader br;
+//	private PrintWriter pw;
+	private ObjectInputStream ois;
+	private ObjectOutputStream oos;
+	private MessageVO mvo;
+//	private String message;
+	
+	public ServerThread(ServerSocket ss,Socket s){
+		this.ss = ss;
+		this.s = s;
+	}
+	
+	public void run(){
+		try {
+//			br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+//			pw = new PrintWriter(s.getOutputStream());
+			ois = new ObjectInputStream(s.getInputStream());
+			oos = new ObjectOutputStream(s.getOutputStream());
+			while (true) {
+//				message = br.readLine();
+//				dealWithMessage(message);
+				mvo = (MessageVO)ois.readObject();
+				dealWithMessage(mvo);
+			}
+		} catch (IOException | ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+//	private void sendMessage(String msg){
+//		pw.println(msg);
+//		pw.flush();
+//	}
+	
+	private void sendMessage(MessageVO mvo) throws IOException{
+		oos.writeObject(mvo);
+		oos.flush();
+	}
+	
+	private void dealWithMessage(Object obj){
+//		String[] split = msg.split(" ");
+//		
+//		switch (split[0]) {
+//		case "login":
+//			if(split[1].equals(split[2]))
+//				sendMessage("login true");
+//			else 
+//				sendMessage("login false");
+//			break;
+//		case "click":
+//			int x = Integer.parseInt(split[1]);
+//			int y = Integer.parseInt(split[2]);
+//			System.out.println("¿Í»§¶Ëµã»÷£º"+x+","+y);
+//			break;
+//		default:
+//			break;
+//		}
+	}
+	
+}
